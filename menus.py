@@ -52,7 +52,7 @@ def extract_juvenes_menu_items(juvenes_data, today_date):
     messages = []
     for kitchen in juvenes_data:
         kitchen_name = kitchen.get('kitchenName', 'Unknown Kitchen')
-        messages.append(f"\n{kitchen_name} {random_emoji()}\n")
+        messages.append(f"\n### {kitchen_name} {random_emoji()}\n```\n")
         
         for menu_type in kitchen.get('menuTypes', []):
             for menu in menu_type.get('menus', []):
@@ -67,6 +67,7 @@ def extract_juvenes_menu_items(juvenes_data, today_date):
                                 for menu_item in meal_option.get('menuItems', []):
                                     item_name = menu_item.get('name', 'Unknown Item')
                                     messages.append(f"        {item_name}\n")
+    messages.append("```")
     return ''.join(messages)
 
 # Function to fetch Uniresta data
@@ -85,7 +86,7 @@ def fetch_uniresta_data(restaurant_name, today_date):
 def extract_uniresta_menu_items(uniresta_data_list, restaurant_name):
     ignored_items = {"Tumma riisi", "Peruna", "Kasvissekoitus", "Päivän jälkiruoka", "Lämmin lisäke", "Päivän jälkiruoka 1,40€", "Kahvila Lipaston salaattitori", "Kasvislounas", "Lipaston Grilli"}
     
-    messages = [f"\nRestaurant {restaurant_name} {random_emoji()}\n"]
+    messages = [f"\n### Restaurant {restaurant_name} {random_emoji()}\n```\n"]
 
     for uniresta_data in uniresta_data_list:
         if uniresta_data.get("allSuccessful"):
@@ -108,6 +109,7 @@ def extract_uniresta_menu_items(uniresta_data_list, restaurant_name):
                             if name.get("language") == "fi":
                                 food_item_name = name.get('name', 'Unknown Item')
                                 messages.append(f"        {food_item_name}\n")
+    messages.append("```")
     return ''.join(messages)
 
 # Function to get all menus for today
@@ -133,6 +135,6 @@ def get_menus():
             response_messages.append(extract_juvenes_menu_items(juvenes_data_response, today_juvenes))
 
     if response_messages:
-        return "```\n" + ''.join(response_messages) + "```"
+        return ''.join(response_messages)
     else:
         return "Rankaise tämän spagetin luojaa!"
