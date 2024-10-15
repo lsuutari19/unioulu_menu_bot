@@ -1,5 +1,6 @@
 import requests
 import json
+import random
 from datetime import datetime
 
 """
@@ -11,6 +12,18 @@ Uniresta: LIPASTO AND JULINIA (Old Napa and Foodoo)
 uniresta_url_template = "https://api.fi.poweresta.com/publicmenu/dates/uniresta/{name}/?menu=ravintola{name}&dates={date}"
 juvenes_url_template = "http://fi.jamix.cloud/apps/menuservice/rest/haku/menu/{customerID}/{kitchenID}?lang=fi"
 
+def random_emoji():
+    emojis = [
+        "😀", "😂", "😅", "😇", "😉", "😊", "😍", "😎", "😜", "🤔",
+        "😐", "😑", "😩", "😢", "😤", "😮", "😱", "😳", "😵", "😡",
+        "😷", "🤒", "🤕", "🤠", "🤖", "💻", "🎉", "🎈", "✨", "❤️",
+        "🌟", "🌈", "🐶", "🐱", "🦁", "🐯", "🐻", "🐼", "🦄", "🐔",
+        "🐢", "🦊", "🌻", "🌺", "🌸", "🌼", "🍀", "🍉", "🍕", "🍔",
+        "🌭", "🍟", "🍦", "🍰", "🎂", "🍩", "🥨", "🍿", "🌮", "🥗",
+        "🌽", "🍇", "🍊", "🍏", "🍌", "🥥", "🎈", "🎉", "🎊", "🎵",
+        "🎶", "🔔", "📚", "🎮", "💼", "📸", "✈️", "⛷️", "🏖️"
+    ]
+    return random.choice(emojis)
 
 # Function to fetch Juvenes data
 def fetch_juvenes_data(customer_id, kitchen_id):
@@ -36,7 +49,7 @@ def extract_juvenes_menu_items(juvenes_data, today_date):
     messages = []
     for kitchen in juvenes_data:
         kitchen_name = kitchen.get('kitchenName', 'Unknown Kitchen')
-        messages.append(f"\n{kitchen_name}\n")
+        messages.append(f"\n{kitchen_name} {random_emoji()}\n")
         
         for menu_type in kitchen.get('menuTypes', []):
             for menu in menu_type.get('menus', []):
@@ -69,7 +82,7 @@ def fetch_uniresta_data(restaurant_name, today_date):
 def extract_uniresta_menu_items(uniresta_data_list, restaurant_name):
     ignored_items = {"Tumma riisi", "Peruna", "Kasvissekoitus", "Päivän jälkiruoka", "Lämmin lisäke", "Päivän jälkiruoka 1,40€", "Kahvila Lipaston salaattitori", "Kasvislounas", "Lipaston Grilli"}
     
-    messages = [f"\nRestaurant {restaurant_name}\n"]
+    messages = [f"\nRestaurant {restaurant_name} {random_emoji()}\n"]
 
     for uniresta_data in uniresta_data_list:
         if uniresta_data.get("allSuccessful"):
