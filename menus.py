@@ -1,37 +1,54 @@
 """ This module handles all the different menu fetches, formatting and so on """
+
 import json
 import random
 from datetime import datetime
 import requests
 
 # Templated endpoints for API calls
-UNIRESTA_URL = ("https://api.fi.poweresta.com/publicmenu/dates"
-                "/uniresta/{name}/?menu=ravintola{name}&dates={date}")
+UNIRESTA_URL = (
+    "https://api.fi.poweresta.com/publicmenu/dates"
+    "/uniresta/{name}/?menu=ravintola{name}&dates={date}"
+)
 
-JUVENES_URL = ("http://fi.jamix.cloud/apps/menuservice/"
-               "rest/haku/menu/{customerID}/{kitchenID}?lang=fi")
+JUVENES_URL = (
+    "http://fi.jamix.cloud/apps/menuservice/"
+    "rest/haku/menu/{customerID}/{kitchenID}?lang=fi"
+)
+
+# List of items to ignore, make this later into a separate file(s)
+# as well as the random_emoji() for filtering customization
+IGNORED_ITEMS = {
+    "CLASSIC",
+    "JÄLKIRUOKA",
+    "KASVISLOUNAS",
+    "SALAD AND SOUP",
+    "MY POPUP GRILL KASVIS",
+    "MY POPUP GRILL",
+    "Tumma riisi",
+    "Peruna",
+    "Kasvissekoitus",
+    "Päivän jälkiruoka",
+    "Lämmin lisäke",
+    "Päivän jälkiruoka 1,40€",
+    "Kahvila Lipaston salaattitori",
+    "Kasvislounas",
+    "Lipaston Grilli",
+    "Lämmin kasvislisäke"
+}
+
+# Some kitchens use the exact same menu without a separate ID
+DUPLICATES = {
+    "Ravintola Kerttu": "Voltti",
+}
 
 
 def random_emoji():
-    """ Function for getting a random emoji """
+    """
+    Function for getting a random emoji, used for the markdown message
+    """
     emojis = [
         "😀",
-        "😂",
-        "😅",
-        "😇",
-        "😉",
-        "😊",
-        "😍",
-        "😎",
-        "😜",
-        "🤔",
-        "😐",
-        "😑",
-        "😩",
-        "😢",
-        "😤",
-        "😮",
-        "😱",
         "😳",
         "😵",
         "😡",
@@ -98,10 +115,9 @@ def random_emoji():
     return random.choice(emojis)
 
 
-
 def fetch_juvenes_data(customer_id, kitchen_id):
     """
-        Function to fetch Juvenes data 
+    Function to fetch Juvenes data
     """
     url = JUVENES_URL.format(customerID=customer_id, kitchenID=kitchen_id)
     try:
@@ -114,27 +130,24 @@ def fetch_juvenes_data(customer_id, kitchen_id):
         return None
 
 
-
 def load_juvenes_restaurants(file_path):
-    """Function to load Uniresta restaurant data from the JSON file"""
+    """
+    Function to load Uniresta restaurant data from the JSON file
+    """
     with open(file_path, "r", encoding="utf-8") as file:
         return json.load(file)
 
 
 def extract_juvenes_menu_items(juvenes_data, today_date):
-    """Function to extract kitchenName, specific meal option names, and menu items"""
-    ignored_items = {
-        "CLASSIC",
-        "JÄLKIRUOKA",
-        "KASVISLOUNAS",
-        "SALAD AND SOUP",
-        "MY POPUP GRILL KASVIS",
-        "MY POPUP GRILL",
-    }
+    """
+    Function to extract kitchenName, specific meal option names, and menu items
+    """
 
     messages = []
     for kitchen in juvenes_data:
         kitchen_name = kitchen.get("kitchenName", "Unknown Kitchen")
+        if kitchen_name in DUPLICATES:
+            kitchen_name = kitchen_name + "/" + DUPLICATES.get(kitchen_name)
         messages.append(f"\n### {kitchen_name} {random_emoji()}\n```\n")
 
         for menu_type in kitchen.get("menuTypes", []):
@@ -147,7 +160,7 @@ def extract_juvenes_menu_items(juvenes_data, today_date):
                             )
 
                             # Check if the meal option is not in the ignored items
-                            if meal_option_name not in ignored_items:
+                            if meal_option_name not in IGNORED_ITEMS:
                                 messages.append(f"    {meal_option_name}\n")
                                 for menu_item in meal_option.get("menuItems", []):
                                     item_name = menu_item.get("name", "Unknown Item")
@@ -156,9 +169,10 @@ def extract_juvenes_menu_items(juvenes_data, today_date):
     return "".join(messages)
 
 
-
 def fetch_uniresta_data(restaurant_name, today_date):
-    """ Function to fetch Uniresta data """
+    """
+    Function to fetch Uniresta data
+    """
     url = UNIRESTA_URL.format(name=restaurant_name, date=today_date)
     try:
         response = requests.get(url, timeout=20)
@@ -171,18 +185,9 @@ def fetch_uniresta_data(restaurant_name, today_date):
 
 
 def extract_uniresta_menu_items(uniresta_data_list, restaurant_name):
-    """ Function to extract Uniresta menu items in Finnish along with the restaurant name """
-    ignored_items = {
-        "Tumma riisi",
-        "Peruna",
-        "Kasvissekoitus",
-        "Päivän jälkiruoka",
-        "Lämmin lisäke",
-        "Päivän jälkiruoka 1,40€",
-        "Kahvila Lipaston salaattitori",
-        "Kasvislounas",
-        "Lipaston Grilli",
-    }
+    """
+    Function to extract Uniresta menu items in Finnish along with the restaurant name
+    """
 
     messages = [f"\n### Restaurant {restaurant_name} {random_emoji()}\n```\n"]
 
@@ -192,13 +197,12 @@ def extract_uniresta_menu_items(uniresta_data_list, restaurant_name):
             for meal_option in meal_options:
                 # Extract the meal option name
                 option_names = meal_option.get("names", [])
-                meal_name = "Unknown Meal Option"
                 for name in option_names:
                     if name.get("language") == "fi":
                         meal_name = name.get("name", "Unknown Meal Option")
                         break
 
-                if meal_name not in ignored_items:
+                if meal_name not in IGNORED_ITEMS:
                     messages.append(f"    {meal_name}\n")
                     rows = meal_option.get("rows", [])
                     for row in rows:
@@ -211,9 +215,10 @@ def extract_uniresta_menu_items(uniresta_data_list, restaurant_name):
     return "".join(messages)
 
 
-
 def get_menus():
-    """ Function to get all menus for today """
+    """
+    Function to get all menus for today
+    """
     today = datetime.now()
     today_uniresta = today.strftime("%Y-%m-%d")
     today_juvenes = today.strftime("%Y%m%d")
