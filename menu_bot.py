@@ -1,8 +1,9 @@
-import discord
+""" Module that handles the commands between the DiscordBot and the end user"""
 import logging
 import os
 from dotenv import load_dotenv, find_dotenv
 from menus import get_menus
+import discord
 
 dotenv_file = find_dotenv(usecwd=True)
 
