@@ -104,7 +104,6 @@ def extract_uniresta_menu_items(uniresta_data_list, restaurant_name):
                     rows = meal_option.get("rows", [])
                     for row in rows:
                         names = row.get("names", [])
-                        # Extract and print names in Finnish
                         for name in names:
                             if name.get("language") == "fi":
                                 food_item_name = name.get('name', 'Unknown Item')
@@ -118,7 +117,7 @@ def get_menus():
     today_juvenes = today.strftime("%Y%m%d")
 
     uniresta_data = ["julinia", "lipasto"]
-    response_messages = []
+    response_messages = [f"{random_emoji()} Here are the menus for {today_uniresta} {random_emoji()}\n"]
 
     for uniresta_restaurant in uniresta_data:
         uniresta_data_response = fetch_uniresta_data(uniresta_restaurant, today_uniresta)
