@@ -1,16 +1,32 @@
 import requests
 import json
+import random
 from datetime import datetime
 
 """
 For my minds sake I have to define here for remembering:
 Uniresta: LIPASTO AND JULINIA (Old Napa and Foodoo)
+Juvenes: All the rest
+
+TO-DO: Where does one get Voltti information?
 """
 
 # Templated endpoints for API calls
 uniresta_url_template = "https://api.fi.poweresta.com/publicmenu/dates/uniresta/{name}/?menu=ravintola{name}&dates={date}"
 juvenes_url_template = "http://fi.jamix.cloud/apps/menuservice/rest/haku/menu/{customerID}/{kitchenID}?lang=fi"
 
+def random_emoji():
+    emojis = [
+        "😀", "😂", "😅", "😇", "😉", "😊", "😍", "😎", "😜", "🤔",
+        "😐", "😑", "😩", "😢", "😤", "😮", "😱", "😳", "😵", "😡",
+        "😷", "🤒", "🤕", "🤠", "🤖", "💻", "🎉", "🎈", "✨", "❤️",
+        "🌟", "🌈", "🐶", "🐱", "🦁", "🐯", "🐻", "🐼", "🦄", "🐔",
+        "🐢", "🦊", "🌻", "🌺", "🌸", "🌼", "🍀", "🍉", "🍕", "🍔",
+        "🌭", "🍟", "🍦", "🍰", "🎂", "🍩", "🥨", "🍿", "🌮", "🥗",
+        "🌽", "🍇", "🍊", "🍏", "🍌", "🥥", "🎈", "🎉", "🎊", "🎵",
+        "🎶", "🔔", "📚", "🎮", "💼", "📸", "✈️", "⛷️", "🏖️"
+    ]
+    return random.choice(emojis)
 
 # Function to fetch Juvenes data
 def fetch_juvenes_data(customer_id, kitchen_id):
@@ -33,9 +49,10 @@ def load_juvenes_restaurants(file_path):
 def extract_juvenes_menu_items(juvenes_data, today_date):
     ignored_items = {"CLASSIC", "JÄLKIRUOKA", "KASVISLOUNAS", "SALAD AND SOUP", "MY POPUP GRILL KASVIS", "MY POPUP GRILL"}
     
+    messages = []
     for kitchen in juvenes_data:
         kitchen_name = kitchen.get('kitchenName', 'Unknown Kitchen')
-        print(f"{kitchen_name}")
+        messages.append(f"\n{kitchen_name} {random_emoji()}\n")
         
         for menu_type in kitchen.get('menuTypes', []):
             for menu in menu_type.get('menus', []):
@@ -46,10 +63,11 @@ def extract_juvenes_menu_items(juvenes_data, today_date):
                             
                             # Check if the meal option is not in the ignored items
                             if meal_option_name not in ignored_items:
-                                print(f"    {meal_option_name}")
+                                messages.append(f"    {meal_option_name}\n")
                                 for menu_item in meal_option.get('menuItems', []):
                                     item_name = menu_item.get('name', 'Unknown Item')
-                                    print(f"        {item_name}")
+                                    messages.append(f"        {item_name}\n")
+    return ''.join(messages)
 
 # Function to fetch Uniresta data
 def fetch_uniresta_data(restaurant_name, today_date):
@@ -67,9 +85,10 @@ def fetch_uniresta_data(restaurant_name, today_date):
 def extract_uniresta_menu_items(uniresta_data_list, restaurant_name):
     ignored_items = {"Tumma riisi", "Peruna", "Kasvissekoitus", "Päivän jälkiruoka", "Lämmin lisäke", "Päivän jälkiruoka 1,40€", "Kahvila Lipaston salaattitori", "Kasvislounas", "Lipaston Grilli"}
     
+    messages = [f"\nRestaurant {restaurant_name} {random_emoji()}\n"]
+
     for uniresta_data in uniresta_data_list:
         if uniresta_data.get("allSuccessful"):
-            print(f"Restaurant {restaurant_name}")
             meal_options = uniresta_data.get("data", {}).get("mealOptions", [])
             for meal_option in meal_options:
                 # Extract the meal option name
@@ -81,7 +100,7 @@ def extract_uniresta_menu_items(uniresta_data_list, restaurant_name):
                         break
                         
                 if meal_name not in ignored_items:
-                    print(f"    {meal_name}")
+                    messages.append(f"    {meal_name}\n")
                     rows = meal_option.get("rows", [])
                     for row in rows:
                         names = row.get("names", [])
@@ -89,33 +108,32 @@ def extract_uniresta_menu_items(uniresta_data_list, restaurant_name):
                         for name in names:
                             if name.get("language") == "fi":
                                 food_item_name = name.get('name', 'Unknown Item')
-                                print(f"        {food_item_name}")
+                                messages.append(f"        {food_item_name}\n")
+    return ''.join(messages)
 
-
+# Function to get all menus for today
 def get_menus():
     today = datetime.now()
     today_uniresta = today.strftime("%Y-%m-%d")
     today_juvenes = today.strftime("%Y%m%d")
-    
-    # Uniresta restaurant names for the API call
+
     uniresta_data = ["julinia", "lipasto"]
-    
-    # Fetch Uniresta data for each restaurant
+    response_messages = []
+
     for uniresta_restaurant in uniresta_data:
         uniresta_data_response = fetch_uniresta_data(uniresta_restaurant, today_uniresta)
         if uniresta_data_response:
-            extract_uniresta_menu_items(uniresta_data_response, uniresta_restaurant)
-        print("\n")
-
-    # Juvenes data is fetched via customerID and kitchenID which reside in juvenes_restaurants.json
+            response_messages.append(extract_uniresta_menu_items(uniresta_data_response, uniresta_restaurant))
+    
     juvenes_data = load_juvenes_restaurants('juvenes_restaurants.json')
-
-    # Fetch Juvenes data for each restaurant and extract menu items
     for restaurant in juvenes_data['restaurants']:
         customer_id = restaurant['customerID']
         kitchen_id = restaurant['kitchenID']
         juvenes_data_response = fetch_juvenes_data(customer_id, kitchen_id)
         if juvenes_data_response:
-            extract_juvenes_menu_items(juvenes_data_response, today_juvenes)
-        print("\n")
+            response_messages.append(extract_juvenes_menu_items(juvenes_data_response, today_juvenes))
 
+    if response_messages:
+        return "```\n" + ''.join(response_messages) + "```"
+    else:
+        return "Rankaise tämän spagetin luojaa!"

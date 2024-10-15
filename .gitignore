@@ -2,3 +2,4 @@
 juvenes.json
 *.log
 bot-env
+__pycache__

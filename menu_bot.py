@@ -39,15 +39,12 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content.startswith('$hello'):
+    if message.content.startswith('!hello'):
         await message.channel.send('Hello!')
 
-    if message.content.startswith('$menu'):
+    if message.content.startswith('!menu'):
         menu_data = get_menus()
         await message.channel.send(menu_data)
-        
-
-
 
 
 client.run(TOKEN, log_handler=handler, log_level=logging.DEBUG)
