@@ -1,0 +1,4 @@
+.env
+juvenes.json
+*.log
+bot-env

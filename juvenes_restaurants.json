@@ -1,0 +1,19 @@
+{
+    "restaurants": [
+        {
+            "customerID": "93077",
+            "kitchenID": "69",
+            "comment": "Foobar"
+        },
+        {
+            "customerID": "93077",
+            "kitchenID": "70",
+            "comment": "Kerttu"
+        },
+        {
+            "customerID": "93077",
+            "kitchenID": "49",
+            "comment": "Mara"
+        }
+    ]
+}
