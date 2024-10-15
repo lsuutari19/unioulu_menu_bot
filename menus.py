@@ -6,6 +6,9 @@ from datetime import datetime
 """
 For my minds sake I have to define here for remembering:
 Uniresta: LIPASTO AND JULINIA (Old Napa and Foodoo)
+Juvenes: All the rest
+
+TO-DO: Where does one get Voltti information?
 """
 
 # Templated endpoints for API calls
@@ -131,7 +134,6 @@ def get_menus():
             response_messages.append(extract_juvenes_menu_items(juvenes_data_response, today_juvenes))
 
     if response_messages:
-        # Combine all messages into a single markdown block
         return "```\n" + ''.join(response_messages) + "```"
     else:
         return "Rankaise tämän spagetin luojaa!"
