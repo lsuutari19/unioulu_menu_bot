@@ -5,9 +5,11 @@ from datetime import datetime
 import requests
 
 # Templated endpoints for API calls
-uniresta_url = "https://api.fi.poweresta.com/publicmenu/dates/uniresta/{name}/?menu=ravintola{name}&dates={date}"
+UNIRESTA_URL = ("https://api.fi.poweresta.com/publicmenu/dates"
+                "/uniresta/{name}/?menu=ravintola{name}&dates={date}")
 
-juvenes_url = "http://fi.jamix.cloud/apps/menuservice/rest/haku/menu/{customerID}/{kitchenID}?lang=fi"
+JUVENES_URL = ("http://fi.jamix.cloud/apps/menuservice/"
+               "rest/haku/menu/{customerID}/{kitchenID}?lang=fi")
 
 
 def random_emoji():
@@ -101,14 +103,14 @@ def fetch_juvenes_data(customer_id, kitchen_id):
     """
         Function to fetch Juvenes data 
     """
-    url = juvenes_url.format(customerID=customer_id, kitchenID=kitchen_id)
+    url = JUVENES_URL.format(customerID=customer_id, kitchenID=kitchen_id)
     try:
         response = requests.get(url, timeout=20)
         response.raise_for_status()
         data = response.json()
         return data
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching Juvenes data: {e}")
+    except requests.exceptions.RequestException as error:
+        print(f"Error fetching Juvenes data: {error}")
         return None
 
 
@@ -157,14 +159,14 @@ def extract_juvenes_menu_items(juvenes_data, today_date):
 
 def fetch_uniresta_data(restaurant_name, today_date):
     """ Function to fetch Uniresta data """
-    url = uniresta_url.format(name=restaurant_name, date=today_date)
+    url = UNIRESTA_URL.format(name=restaurant_name, date=today_date)
     try:
         response = requests.get(url, timeout=20)
         response.raise_for_status()
         data = response.json()
         return data
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching Uniresta data: {e}")
+    except requests.exceptions.RequestException as error:
+        print(f"Error fetching Uniresta data: {error}")
         return None
 
 
@@ -242,5 +244,4 @@ def get_menus():
 
     if response_messages:
         return "".join(response_messages)
-    else:
-        return "Rankaise tämän spagetin luojaa!"
+    return "Rankaise tämän spagetin luojaa!"

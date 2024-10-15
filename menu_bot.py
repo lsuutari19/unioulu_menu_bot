@@ -2,8 +2,9 @@
 import logging
 import os
 from dotenv import load_dotenv, find_dotenv
-from menus import get_menus
 import discord
+from menus import get_menus
+
 
 dotenv_file = find_dotenv(usecwd=True)
 
@@ -32,11 +33,17 @@ http://fi.jamix.cloud/apps/menuservice/rest/haku/menu/<customerID>/<kitchenID>?l
 
 @client.event
 async def on_ready():
+    """
+        Logs which client user the bot starts as
+    """
     print(f'We have logged in as {client.user}')
 
 
 @client.event
 async def on_message(message):
+    """
+        Handles the messages between end user and the bot
+    """
     if message.author == client.user:
         return
 
