@@ -1,0 +1,132 @@
+{
+    "julinia": {
+        "Kasvislounas": [
+            "Pinaatti-kasvislasagnettea"
+        ],
+        "Lounas 1": [
+            "Pyttipannua"
+        ],
+        "Lounas 2": [
+            "Broilerin reisikoipi",
+            "Tulista mangokastiketta"
+        ],
+        "Herkkulounas": [
+            "sis. allergeenejä ",
+            "Tummaa rosmariinikastiketta",
+            "Paahdettua Tervakankaan lohkoperunaa"
+        ],
+        "Lämmin lisäke": [
+            "Tumma riisi",
+            "Peruna",
+            "Kasvissekoitus"
+        ],
+        "Päivän jälkiruoka 1,40€": [
+            "Päivän jälkiruoka "
+        ]
+    },
+    "lipasto": {
+        "Kasvislounas": [
+            "Pinaatti-kasvislasagnettea"
+        ],
+        "Lounas 1": [
+            "Pyttipannua"
+        ],
+        "Lounas 2": [
+            "Kalkkuna korma"
+        ],
+        "Lipaston Grilli": [
+            "Kebab Iskender",
+            "Vege Iskender",
+            "Cheese burger ja tikkuperunoita"
+        ],
+        "Kahvila Lipaston salaattitori": [
+            "Kukkakaali-porkkanasosekeittoa",
+            "Päivän salaattivalikoima. Vihanneksia, hedelmiä, salaattisekoituksia ja proteiinilisä."
+        ],
+        "Iltaruoka 15.00-18.00": [
+            "Oman keittiön lohimureke/pihvi",
+            "Tillikastiketta"
+        ],
+        "Lämmin lisäke": [
+            "Tumma riisi",
+            "Peruna",
+            "Kasvissekoitus"
+        ],
+        "Päivän jälkiruoka 1,40€": [
+            "Päivän jälkiruoka "
+        ]
+    },
+    "Foobar": {
+        "KASVISLOUNAS": [
+            "Kasvis-kvinoapihvit",
+            "Vegaanista ruohosipulimajoneesia",
+            "Keitetyt perunat",
+            "Lämmin kasvislisäke"
+        ],
+        "LOUNAS": [
+            "Tuoreyrteillä maustettua broilerpataa",
+            "Täysjyväriisiä",
+            "Lämmin kasvislisäke"
+        ],
+        "MY POPUP GRILL": [
+            "Päivän pizza"
+        ],
+        "MY POPUP GRILL KASVIS": [
+            "Päivän pizza"
+        ],
+        "SALAD AND SOUP": [
+            "Pinaattikeittoa",
+            "Keitetty kananmuna",
+            "Runsas salaattipöytä"
+        ]
+    },
+    "Kerttu": {
+        "KASVISLOUNAS": [
+            "Tomaattinen linssi-kasvispata",
+            "Täysjyväriisiä",
+            "Lämmin kasvislisäke"
+        ],
+        "LOUNAS": [
+            "Jauheliha-kaalilaatikkoa",
+            "Lämmin kasvislisäke"
+        ],
+        "JÄLKIRUOKA": [
+            "Raparperirahka"
+        ],
+        "SALAD AND SOUP": [
+            "Tomaatti-vuohenjuustokeittoa",
+            "proteiinilisäke"
+        ],
+        "CLASSIC": [
+            "Mausteinen intialainen broilerkastike",
+            "Täysjyväriisiä",
+            "Lämmin kasvislisäke"
+        ]
+    },
+    "Mara": {
+        "KASVISLOUNAS": [
+            "Kasvis-kvinoapihvit",
+            "Vegaanista ruohosipulimajoneesia",
+            "Keitetyt perunat",
+            "Lämmin kasvislisäke"
+        ],
+        "LOUNAS": [
+            "Tuoreyrteillä maustettua broilerpataa",
+            "Täysjyväriisiä",
+            "Lämmin kasvislisäke"
+        ],
+        "ERIKOISHINTAINEN LOUNAS": [
+            "Sipulitäytteinen pannupihvi",
+            "Kermaista BBQ-kastiketta",
+            "Paahdetut perunat"
+        ],
+        "JÄLKIRUOKA": [
+            "Raparperirahka"
+        ],
+        "SALAD AND SOUP": [
+            "Pinaattikeittoa",
+            "Keitetty kananmuna",
+            "Runsas salaattipöytä"
+        ]
+    }
+}

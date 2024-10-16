@@ -16,33 +16,6 @@ JUVENES_URL = (
     "rest/haku/menu/{customerID}/{kitchenID}?lang=fi"
 )
 
-# List of items to ignore, make this later into a separate file(s)
-# as well as the random_emoji() for filtering customization
-IGNORED_ITEMS = {
-    "CLASSIC",
-    "JÄLKIRUOKA",
-    "KASVISLOUNAS",
-    "SALAD AND SOUP",
-    "MY POPUP GRILL KASVIS",
-    "MY POPUP GRILL",
-    "Tumma riisi",
-    "Peruna",
-    "Kasvissekoitus",
-    "Päivän jälkiruoka",
-    "Lämmin lisäke",
-    "Päivän jälkiruoka 1,40€",
-    "Kahvila Lipaston salaattitori",
-    "Kasvislounas",
-    "Lipaston Grilli",
-    "Lämmin kasvislisäke",
-    "ERIKOISHINTAINEN LOUNAS",
-}
-
-# Some kitchens use the exact same ID
-DUPLICATES = {
-    "Ravintola Kerttu": "Voltti",
-}
-
 
 def random_emoji():
     """
@@ -139,52 +112,69 @@ def load_juvenes_restaurants(file_path):
         return json.load(file)
 
 
-def extract_juvenes_menu_items(juvenes_data, today_date):
+def extract_juvenes_menu_items(juvenes_data, today_date, kitchen_id):
     """
     Function to extract kitchenName, specific meal option names, and menu items.
-    Differentiates menus based on menuTypeName to avoid duplicate fetching.
+    Handles the case for kitchenID 70 separately for Kerttu and Voltti based on menuTypeName.
     """
+    menu_structure = {}
 
-    messages = []
-    processed_menus = set()  # Track combinations of kitchenName and menuTypeName
+    # Check for specific kitchenID case
+    if kitchen_id == 70:
+        for kitchen in juvenes_data:
+            if kitchen["kitchenId"] == kitchen_id:
+                for menu_type in kitchen.get("menuTypes", []):
+                    menu_type_name = menu_type.get("menuTypeName", "")
+                    print(menu_type_name)
+                    for menu in menu_type.get("menus", []):
+                        for day in menu.get("days", []):
+                            if str(day.get("date")) == today_date:
+                                for meal_option in day.get("mealoptions", []):
+                                    meal_option_name = meal_option.get(
+                                        "name", "Unknown Meal Option"
+                                    )
 
-    for kitchen in juvenes_data:
-        kitchen_name = kitchen.get("kitchenName", "Unknown Kitchen")
+                                    # Separate structures for Kerttu and Voltti based on menuTypeName
+                                    if "Kerttu lounas" in menu_type_name:
+                                        menu_structure.setdefault("Kerttu", {})[
+                                            meal_option_name
+                                        ] = []
+                                    elif "Voltti lounas" in menu_type_name:
+                                        menu_structure.setdefault("Voltti", {})[
+                                            meal_option_name
+                                        ] = []
 
-        for menu_type in kitchen.get("menuTypes", []):
-            menu_type_name = menu_type.get("menuTypeName", "Unknown Menu Type")
+                                    for menu_item in meal_option.get("menuItems", []):
+                                        item_name = menu_item.get(
+                                            "name", "Unknown Item"
+                                        )
+                                        if "Kerttu lounas" in menu_type_name:
+                                            menu_structure["Kerttu"][
+                                                meal_option_name
+                                            ].append(item_name)
+                                        elif "Voltti lounas" in menu_type_name:
+                                            menu_structure["Voltti"][
+                                                meal_option_name
+                                            ].append(item_name)
 
-            # This check is for duplicate kitchenIDs ex. Voltti & Kerttu
-            if menu_type_name in processed_menus:
-                continue
-            else:
-                processed_menus.add(kitchen_name)  # Mark as processed
-                # Add the header for the restaurant, with proper spacing
-                if "Voltti" in menu_type_name:
-                    messages.append(f"\n {menu_type_name} \n")
-                else:
-                    messages.append(
-                        f"\n### {kitchen_name} {random_emoji()}\n"
-                    )
-                if not any("```" in msg for msg in messages):
-                    messages.append("```\n")
+    else:
+        # For other kitchenIDs
+        for kitchen in juvenes_data:
+            for menu_type in kitchen.get("menuTypes", []):
+                for menu in menu_type.get("menus", []):
+                    for day in menu.get("days", []):
+                        if str(day.get("date")) == today_date:
+                            for meal_option in day.get("mealoptions", []):
+                                meal_option_name = meal_option.get(
+                                    "name", "Unknown Meal Option"
+                                )
+                                menu_structure[meal_option_name] = []
 
-            for menu in menu_type.get("menus", []):
-                for day in menu.get("days", []):
-                    if str(day.get("date")) == today_date:
-                        for meal_option in day.get("mealoptions", []):
-                            meal_option_name = meal_option.get(
-                                "name", "Unknown Meal Option"
-                            )
-                            if meal_option_name not in IGNORED_ITEMS:
                                 for menu_item in meal_option.get("menuItems", []):
-                                    if menu_item.get("name") not in IGNORED_ITEMS:
-                                        item_name = menu_item.get("name", "Unknown Item")
-                                        messages.append(f"    {meal_option_name}\n")
-                                        messages.append(f"        {item_name}\n")
-    print(processed_menus)
-    messages.append("```\n")
-    return "".join(messages)
+                                    item_name = menu_item.get("name", "Unknown Item")
+                                    menu_structure[meal_option_name].append(item_name)
+
+    return menu_structure
 
 
 def fetch_uniresta_data(restaurant_name, today_date):
@@ -202,35 +192,42 @@ def fetch_uniresta_data(restaurant_name, today_date):
         return None
 
 
-def extract_uniresta_menu_items(uniresta_data_list, restaurant_name):
+def extract_uniresta_menu_items(uniresta_data):
     """
     Function to extract Uniresta menu items in Finnish along with the restaurant name
     """
+    menu_structure = {}
 
-    messages = [f"\n### Restaurant {restaurant_name} {random_emoji()}\n```\n"]
-
-    for uniresta_data in uniresta_data_list:
-        if uniresta_data.get("allSuccessful"):
-            meal_options = uniresta_data.get("data", {}).get("mealOptions", [])
+    for item in uniresta_data:
+        data = item.get("data", {})
+        meal_options = data.get("mealOptions", [])
+        if meal_options:
             for meal_option in meal_options:
-                # Extract the meal option name
                 option_names = meal_option.get("names", [])
                 for name in option_names:
                     if name.get("language") == "fi":
-                        meal_name = name.get("name", "Unknown Meal Option")
-                        break
+                        meal_option_name = name["name"]
+                        menu_structure[meal_option_name] = []
 
-                if meal_name not in IGNORED_ITEMS:
-                    messages.append(f"    {meal_name}\n")
-                    rows = meal_option.get("rows", [])
-                    for row in rows:
-                        names = row.get("names", [])
-                        for name in names:
-                            if name.get("language") == "fi":
-                                food_item_name = name.get("name", "Unknown Item")
-                                messages.append(f"        {food_item_name}\n")
-    messages.append("```")
-    return "".join(messages)
+                        rows = meal_option.get("rows", [])
+                        for row in rows:
+                            names = row.get("names", [])
+                            for name in names:
+                                if name.get("language") == "fi":
+                                    food_item_name = name.get("name", "Unknown Item")
+                                    menu_structure[meal_option_name].append(
+                                        food_item_name
+                                    )
+
+    return menu_structure
+
+
+def save_menus_to_file(menus_dict, filename):
+    """
+    Save the collected menus to a JSON file.
+    """
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(menus_dict, f, ensure_ascii=False, indent=4)
 
 
 def get_menus():
@@ -246,27 +243,42 @@ def get_menus():
         f"{random_emoji()} Here are the menus for {today_uniresta} {random_emoji()}\n"
     ]
 
+    restaurant_menus = {}
+
     for uniresta_restaurant in uniresta_data:
         uniresta_data_response = fetch_uniresta_data(
             uniresta_restaurant, today_uniresta
         )
+
         if uniresta_data_response:
-            response_messages.append(
-                extract_uniresta_menu_items(uniresta_data_response, uniresta_restaurant)
-            )
+            menu_items = extract_uniresta_menu_items(uniresta_data_response)
+            restaurant_menus[uniresta_restaurant] = menu_items
 
     juvenes_data = load_juvenes_restaurants("juvenes_restaurants.json")
+
     for restaurant in juvenes_data["restaurants"]:
         customer_id = restaurant["customerID"]
         kitchen_id = restaurant["kitchenID"]
+        restaurant_name = restaurant.get("comment", "Unknown Restaurant")
+
         juvenes_data_response = fetch_juvenes_data(customer_id, kitchen_id)
         if juvenes_data_response:
-            response_messages.append(
-                extract_juvenes_menu_items(juvenes_data_response, today_juvenes)
+            menu_items = extract_juvenes_menu_items(
+                juvenes_data_response, today_juvenes, kitchen_id
             )
+            restaurant_menus[restaurant_name] = menu_items
+
+    for restaurant_name, menu in restaurant_menus.items():
+        response_messages.append(f"### {restaurant_name}\n{menu}")
+
+    for message in response_messages:
+        print(message + "\n")
+
+    save_menus_to_file(restaurant_menus, today_juvenes + ".json")
 
     if response_messages:
         return "".join(response_messages)
+
     return "Rankaise tämän spagetin luojaa!"
 
 
