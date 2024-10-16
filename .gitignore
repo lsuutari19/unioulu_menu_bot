@@ -1,5 +1,5 @@
 .env
-juvenes.json
+*.json
 *.log
 bot-env
 botenv

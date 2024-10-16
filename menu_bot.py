@@ -1,5 +1,6 @@
 """ Module that handles the commands between the DiscordBot and the end user"""
 import logging
+import datetime
 import os
 from dotenv import load_dotenv, find_dotenv
 import discord
@@ -31,6 +32,16 @@ http://fi.jamix.cloud/apps/menuservice/rest/haku/menu/<customerID>/<kitchenID>?l
 
 """
 
+async def check_todays_menu_exists():
+    today_date = datetime.datetime.now().strftime("%Y%m%d")
+    file_path = f"menus/{today_date}.json"
+
+    # Check if the file exists
+    if os.path.isfile(file_path):
+        return True
+    else:
+        return False
+
 @client.event
 async def on_ready():
     """
@@ -51,8 +62,9 @@ async def on_message(message):
         await message.channel.send('Hello!')
 
     if message.content.startswith('!menu'):
-        menu_data = get_menus()
-        await message.channel.send(menu_data)
+        if not check_todays_menu_exists:
+            get_menus()
+        await message.channel.send()
 
 
 client.run(TOKEN, log_handler=handler, log_level=logging.DEBUG)

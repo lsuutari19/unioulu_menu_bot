@@ -1,6 +1,6 @@
 import requests
-from emoji import random_emoji
-from variables import UNIRESTA_URL
+from modules.emoji import random_emoji
+from modules.variables import UNIRESTA_URL
 
 def fetch_uniresta_data(restaurant_name, today_date):
     """ Function to fetch Uniresta data """
@@ -15,30 +15,31 @@ def fetch_uniresta_data(restaurant_name, today_date):
         return None
 
 
-def extract_uniresta_menu_items(uniresta_data_list, restaurant_name):
-    """ Function to extract Uniresta menu items in Finnish along with the restaurant name """
+def extract_uniresta_menu_items(uniresta_data):
+    """
+    Function to extract Uniresta menu items in Finnish along with the restaurant name
+    """
+    menu_structure = {}
 
-    messages = [f"\n### Restaurant {restaurant_name} {random_emoji()}\n```\n"]
-
-    for uniresta_data in uniresta_data_list:
-        if uniresta_data.get("allSuccessful"):
-            meal_options = uniresta_data.get("data", {}).get("mealOptions", [])
+    for item in uniresta_data:
+        data = item.get("data", {})
+        meal_options = data.get("mealOptions", [])
+        if meal_options:
             for meal_option in meal_options:
-                # Extract the meal option name
                 option_names = meal_option.get("names", [])
-                meal_name = "Unknown Meal Option"
                 for name in option_names:
                     if name.get("language") == "fi":
-                        meal_name = name.get("name", "Unknown Meal Option")
-                        break
+                        meal_option_name = name["name"]
+                        menu_structure[meal_option_name] = []
 
-                messages.append(f"    {meal_name}\n")
-                rows = meal_option.get("rows", [])
-                for row in rows:
-                    names = row.get("names", [])
-                    for name in names:
-                        if name.get("language") == "fi":
-                            food_item_name = name.get("name", "Unknown Item")
-                            messages.append(f"        {food_item_name}\n")
-    messages.append("```")
-    return "".join(messages)
+                        rows = meal_option.get("rows", [])
+                        for row in rows:
+                            names = row.get("names", [])
+                            for name in names:
+                                if name.get("language") == "fi":
+                                    food_item_name = name.get("name", "Unknown Item")
+                                    menu_structure[meal_option_name].append(
+                                        food_item_name
+                                    )
+
+    return menu_structure
