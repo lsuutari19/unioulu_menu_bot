@@ -1,6 +1,10 @@
-import requests, json
+"""
+The functions in this module handle the fetching of data from Juvenes API,
+extracting them and parsing the results for usage by the menus.py module
+"""
+
+import requests
 from modules.variables import JUVENES_URL
-from modules.emoji import random_emoji
 
 
 def fetch_juvenes_data(customer_id, kitchen_id):
@@ -18,13 +22,7 @@ def fetch_juvenes_data(customer_id, kitchen_id):
         return None
 
 
-def load_juvenes_restaurants(file_path):
-    """Function to load Uniresta restaurant data from the JSON file"""
-    with open(file_path, "r", encoding="utf-8") as file:
-        return json.load(file)
-
-
-def extract_juvenes_menu_items(juvenes_data, today_date, kitchen_id):
+def extract_juvenes_menu_items(juvenes_data, today_date):
     """Function to extract kitchenName, specific meal option names, and menu items"""
     menu_structure = {}
 
@@ -42,13 +40,17 @@ def extract_juvenes_menu_items(juvenes_data, today_date, kitchen_id):
                             menu_structure[menu_type_name] = {}
 
                         for meal_option in day.get("mealoptions", []):
-                            meal_option_name = meal_option.get("name", "Unknown Meal Option")
+                            meal_option_name = meal_option.get(
+                                "name", "Unknown Meal Option"
+                            )
 
                             if meal_option_name not in menu_structure[menu_type_name]:
                                 menu_structure[menu_type_name][meal_option_name] = []
 
                             for menu_item in meal_option.get("menuItems", []):
                                 item_name = menu_item.get("name", "Unknown Item")
-                                menu_structure[menu_type_name][meal_option_name].append(item_name)
+                                menu_structure[menu_type_name][meal_option_name].append(
+                                    item_name
+                                )
 
     return menu_structure

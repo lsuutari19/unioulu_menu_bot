@@ -1,9 +1,13 @@
+"""
+The functions in this module handle the fetching of data from Uniresta API,
+extracting them and parsing the results for usage by the menus.py module
+"""
 import requests
-from modules.emoji import random_emoji
 from modules.variables import UNIRESTA_URL
 
+
 def fetch_uniresta_data(restaurant_name, today_date):
-    """ Function to fetch Uniresta data """
+    """Function to fetch Uniresta data"""
     url = UNIRESTA_URL.format(name=restaurant_name, date=today_date)
     try:
         response = requests.get(url, timeout=20)
