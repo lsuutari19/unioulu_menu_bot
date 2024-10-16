@@ -1,4 +1,5 @@
 """ Module that handles the commands between the DiscordBot and the end user"""
+
 import logging
 import os
 from dotenv import load_dotenv, find_dotenv
@@ -15,7 +16,7 @@ TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 if TOKEN is None or TOKEN == "":
     print("No token found in .env file")
 
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -31,26 +32,27 @@ http://fi.jamix.cloud/apps/menuservice/rest/haku/menu/<customerID>/<kitchenID>?l
 
 """
 
+
 @client.event
 async def on_ready():
     """
-        Logs which client user the bot starts as
+    Logs which client user the bot starts as
     """
-    print(f'We have logged in as {client.user}')
+    print(f"We have logged in as {client.user}")
 
 
 @client.event
 async def on_message(message):
     """
-        Handles the messages between end user and the bot
+    Handles the messages between end user and the bot
     """
     if message.author == client.user:
         return
 
-    if message.content.startswith('!hello'):
-        await message.channel.send('Hello!')
+    if message.content.startswith("!hello"):
+        await message.channel.send("Hello!")
 
-    if message.content.startswith('!menu'):
+    if message.content.startswith("!menu"):
         menu_data = get_menus()
         await message.channel.send(menu_data)
 

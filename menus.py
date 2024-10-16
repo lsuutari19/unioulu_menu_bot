@@ -34,10 +34,11 @@ IGNORED_ITEMS = {
     "Kahvila Lipaston salaattitori",
     "Kasvislounas",
     "Lipaston Grilli",
-    "Lämmin kasvislisäke"
+    "Lämmin kasvislisäke",
+    "ERIKOISHINTAINEN LOUNAS",
 }
 
-# Some kitchens use the exact same menu without a separate ID
+# Some kitchens use the exact same ID
 DUPLICATES = {
     "Ravintola Kerttu": "Voltti",
 }
@@ -140,17 +141,34 @@ def load_juvenes_restaurants(file_path):
 
 def extract_juvenes_menu_items(juvenes_data, today_date):
     """
-    Function to extract kitchenName, specific meal option names, and menu items
+    Function to extract kitchenName, specific meal option names, and menu items.
+    Differentiates menus based on menuTypeName to avoid duplicate fetching.
     """
 
     messages = []
+    processed_menus = set()  # Track combinations of kitchenName and menuTypeName
+
     for kitchen in juvenes_data:
         kitchen_name = kitchen.get("kitchenName", "Unknown Kitchen")
-        if kitchen_name in DUPLICATES:
-            kitchen_name = kitchen_name + "/" + DUPLICATES.get(kitchen_name)
-        messages.append(f"\n### {kitchen_name} {random_emoji()}\n```\n")
 
         for menu_type in kitchen.get("menuTypes", []):
+            menu_type_name = menu_type.get("menuTypeName", "Unknown Menu Type")
+
+            # This check is for duplicate kitchenIDs ex. Voltti & Kerttu
+            if menu_type_name in processed_menus:
+                continue
+            else:
+                processed_menus.add(kitchen_name)  # Mark as processed
+                # Add the header for the restaurant, with proper spacing
+                if "Voltti" in menu_type_name:
+                    messages.append(f"\n {menu_type_name} \n")
+                else:
+                    messages.append(
+                        f"\n### {kitchen_name} {random_emoji()}\n"
+                    )
+                if not any("```" in msg for msg in messages):
+                    messages.append("```\n")
+
             for menu in menu_type.get("menus", []):
                 for day in menu.get("days", []):
                     if str(day.get("date")) == today_date:
@@ -158,14 +176,14 @@ def extract_juvenes_menu_items(juvenes_data, today_date):
                             meal_option_name = meal_option.get(
                                 "name", "Unknown Meal Option"
                             )
-
-                            # Check if the meal option is not in the ignored items
                             if meal_option_name not in IGNORED_ITEMS:
-                                messages.append(f"    {meal_option_name}\n")
                                 for menu_item in meal_option.get("menuItems", []):
-                                    item_name = menu_item.get("name", "Unknown Item")
-                                    messages.append(f"        {item_name}\n")
-    messages.append("```")
+                                    if menu_item.get("name") not in IGNORED_ITEMS:
+                                        item_name = menu_item.get("name", "Unknown Item")
+                                        messages.append(f"    {meal_option_name}\n")
+                                        messages.append(f"        {item_name}\n")
+    print(processed_menus)
+    messages.append("```\n")
     return "".join(messages)
 
 
@@ -250,3 +268,6 @@ def get_menus():
     if response_messages:
         return "".join(response_messages)
     return "Rankaise tämän spagetin luojaa!"
+
+
+get_menus()
