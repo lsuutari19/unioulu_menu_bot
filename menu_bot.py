@@ -23,38 +23,25 @@ intents.message_content = True
 
 client = discord.Client(intents=intents)
 
-"""
-Example API call to Uniresta (Julinia)
-https://api.fi.poweresta.com/publicmenu/dates/uniresta/julinia/?menu=ravintolajulinia&dates=2024-10-15
-
-Example API call to Juvenes
-http://fi.jamix.cloud/apps/menuservice/rest/haku/menu/<customerID>/<kitchenID>?lang=fi
-
-"""
-
 async def check_todays_menu_exists():
+    """Checks if todays menu is already fetches into menus folder"""
     today_date = datetime.datetime.now().strftime("%Y%m%d")
     file_path = f"menus/{today_date}.json"
 
     # Check if the file exists
     if os.path.isfile(file_path):
         return True
-    else:
-        return False
+    return False
 
 @client.event
 async def on_ready():
-    """
-        Logs which client user the bot starts as
-    """
+    """Logs which client user the bot starts as"""
     print(f'We have logged in as {client.user}')
 
 
 @client.event
 async def on_message(message):
-    """
-        Handles the messages between end user and the bot
-    """
+    """ Handles the messages between end user and the bot"""
     if message.author == client.user:
         return
 

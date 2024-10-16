@@ -8,9 +8,7 @@ from modules.variables import JUVENES_URL
 
 
 def fetch_juvenes_data(customer_id, kitchen_id):
-    """
-    Function to fetch Juvenes data
-    """
+    """Function to fetch Juvenes data"""
     url = JUVENES_URL.format(customerID=customer_id, kitchenID=kitchen_id)
     try:
         response = requests.get(url, timeout=20)

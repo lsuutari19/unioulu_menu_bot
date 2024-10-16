@@ -16,8 +16,8 @@ def save_menus_to_file(menus_dict, filename):
     Save the collected menus to a JSON file.
     """
     file_path = os.path.join("menus", filename)
-    with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(menus_dict, f, ensure_ascii=False, indent=4)
+    with open(file_path, "w", encoding="utf-8") as file:
+        json.dump(menus_dict, file, ensure_ascii=False, indent=4)
 
 
 def get_menus():
@@ -53,8 +53,6 @@ def get_menus():
                 menus[meal_type_name] = meal_options
 
     save_menus_to_file(menus, today_juvenes + ".json")
-
-    return
 
 
 get_menus()

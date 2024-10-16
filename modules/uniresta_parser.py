@@ -20,9 +20,7 @@ def fetch_uniresta_data(restaurant_name, today_date):
 
 
 def extract_uniresta_menu_items(uniresta_data):
-    """
-    Function to extract Uniresta menu items in Finnish along with the restaurant name
-    """
+    """Function to extract Uniresta menu items in Finnish along with the restaurant name"""
     menu_structure = {}
 
     for item in uniresta_data:
