@@ -3,22 +3,6 @@ The functions in this module handle the fetching of data from Juvenes API,
 extracting them and parsing the results for usage by the menus.py module
 """
 
-import requests
-from modules.variables import JUVENES_URL
-
-
-def fetch_juvenes_data(customer_id, kitchen_id):
-    """Function to fetch Juvenes data"""
-    url = JUVENES_URL.format(customerID=customer_id, kitchenID=kitchen_id)
-    try:
-        response = requests.get(url, timeout=20)
-        response.raise_for_status()
-        data = response.json()
-        return data
-    except requests.exceptions.RequestException as error:
-        print(f"Error fetching Juvenes data: {error}")
-        return None
-
 
 def extract_juvenes_menu_items(juvenes_data, today_date):
     """Function to extract kitchenName, specific meal option names, and menu items"""

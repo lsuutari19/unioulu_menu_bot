@@ -6,9 +6,14 @@ and saves it into a .json format for use by the Discord bot.
 import json
 import os
 from datetime import datetime
-from modules.variables import JUVENES_RESTAURANTS
-from modules.juvenes_parser import fetch_juvenes_data, extract_juvenes_menu_items
-from modules.uniresta_parser import fetch_uniresta_data, extract_uniresta_menu_items
+from modules.variables import (
+    JUVENES_RESTAURANTS,
+    JUVENES_URL,
+    UNIRESTA_URL,
+    fetch_api_data,
+)
+from modules.juvenes_parser import extract_juvenes_menu_items
+from modules.uniresta_parser import extract_uniresta_menu_items
 
 
 def save_menus_to_file(menus_dict, filename):
@@ -32,8 +37,8 @@ def get_menus():
     menus = {}
 
     for uniresta_restaurant in uniresta_data:
-        uniresta_data_response = fetch_uniresta_data(
-            uniresta_restaurant, today_uniresta
+        uniresta_data_response = fetch_api_data(
+            UNIRESTA_URL, name=uniresta_restaurant, date=today_uniresta
         )
 
         if uniresta_data_response:
@@ -44,7 +49,9 @@ def get_menus():
         customer_id = restaurant["customerID"]
         kitchen_id = restaurant["kitchenID"]
 
-        juvenes_data_response = fetch_juvenes_data(customer_id, kitchen_id)
+        juvenes_data_response = fetch_api_data(
+            JUVENES_URL, customerID=customer_id, kitchenID=kitchen_id
+        )
         if juvenes_data_response:
             menu_items = extract_juvenes_menu_items(
                 juvenes_data_response, today_juvenes

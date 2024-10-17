@@ -2,21 +2,6 @@
 The functions in this module handle the fetching of data from Uniresta API,
 extracting them and parsing the results for usage by the menus.py module
 """
-import requests
-from modules.variables import UNIRESTA_URL
-
-
-def fetch_uniresta_data(restaurant_name, today_date):
-    """Function to fetch Uniresta data"""
-    url = UNIRESTA_URL.format(name=restaurant_name, date=today_date)
-    try:
-        response = requests.get(url, timeout=20)
-        response.raise_for_status()
-        data = response.json()
-        return data
-    except requests.exceptions.RequestException as error:
-        print(f"Error fetching Uniresta data: {error}")
-        return None
 
 
 def extract_uniresta_menu_items(uniresta_data):
