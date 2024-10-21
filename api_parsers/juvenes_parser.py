@@ -25,7 +25,7 @@ def extract_juvenes_menu_items(juvenes_data, today_date):
                             menu_structure[menu_type_name] = {}
 
                         for meal_option in day.get("mealoptions", []):
-                            meal_name = meal_option.get("name", "Unknown Meal Option")
+                            meal_name = meal_option.get("name", "Unknown Meal Option").upper()
 
                             # Check if meal option name already exists and append count if needed
                             if meal_name in meal_name_count:

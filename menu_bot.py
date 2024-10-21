@@ -1,7 +1,8 @@
 """ Module that handles the commands between the DiscordBot and the end user"""
 
 import logging
-import datetime, json
+import datetime
+import json
 import os
 from dotenv import load_dotenv, find_dotenv
 import discord
