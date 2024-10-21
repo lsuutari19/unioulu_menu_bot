@@ -26,9 +26,9 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 
-async def check_todays_menu_exists():
+async def check_todays_menu_exists(today_date):
     """Checks if today's menu is already fetched into menus folder and returns the parsed JSON"""
-    today_date = datetime.datetime.now().strftime("%Y%m%d")
+
     file_path = f"menus/{today_date}.json"
     print(file_path)
 
@@ -63,19 +63,19 @@ async def on_message(message):
 
     if message.content.startswith("!menu"):
         # Check if today's menu file exists and get the parsed data
-        menu_data = await check_todays_menu_exists()
+        today_date = datetime.datetime.now().strftime("%Y%m%d")
+        menu_data = await check_todays_menu_exists(today_date)
 
         if not menu_data:
             await get_menus()
-
-            menu_data = await check_todays_menu_exists()
+            menu_data = await check_todays_menu_exists(today_date)
 
             # Last check to make sure there wasn't issues in creating the json file
             if not menu_data:
                 await message.channel.send("Menu could not be fetched or created.")
                 return
 
-        markdown_message = await parse_menu_from_file(menu_data)
+        markdown_message = await parse_menu_from_file(menu_data, today_date)
         await message.channel.send(markdown_message)
 
 

@@ -4,7 +4,7 @@ extracting them and parsing the results for usage by the menus.py module
 """
 
 
-def extract_juvenes_menu_items(juvenes_data, today_date):
+def extract_juvenes_menu_items(juvenes_data, date):
     """Function to extract kitchenName, specific meal option names, and menu items"""
     menu_structure = {}
 
@@ -20,8 +20,8 @@ def extract_juvenes_menu_items(juvenes_data, today_date):
 
             for menu in menu_type.get("menus", []):
                 for day in menu.get("days", []):
-                    if str(day.get("date")) == today_date:
-                        if today_date not in menu_structure[menu_type_name]:
+                    if str(day.get("date")) == date:
+                        if date not in menu_structure[menu_type_name]:
                             menu_structure[menu_type_name] = {}
 
                         for meal_option in day.get("mealoptions", []):
