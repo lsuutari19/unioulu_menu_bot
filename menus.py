@@ -43,7 +43,14 @@ def get_menus():
 
         if uniresta_data_response:
             menu_items = extract_uniresta_menu_items(uniresta_data_response)
-            menus[uniresta_restaurant.capitalize()] = menu_items
+            # Check that there are no empty values in the menu
+            filtered_menu_items = {meal: items for meal, items in menu_items.items() if items}
+
+            if filtered_menu_items:
+                print(filtered_menu_items)
+                menus[uniresta_restaurant.capitalize()] = filtered_menu_items
+            else:
+                print(f"{uniresta_restaurant.capitalize()} has no valid menu items.")
 
     for restaurant in JUVENES_RESTAURANTS:
         customer_id = restaurant["customerID"]
@@ -52,12 +59,18 @@ def get_menus():
         juvenes_data_response = fetch_api_data(
             JUVENES_URL, customerID=customer_id, kitchenID=kitchen_id
         )
+
         if juvenes_data_response:
             menu_items = extract_juvenes_menu_items(
                 juvenes_data_response, today_juvenes
             )
-            for meal_type_name, meal_options in menu_items.items():
-                menus[meal_type_name] = meal_options
+
+            if menu_items:
+                # Only add to 'menus' if at least one of the meal types has items
+                for meal_type_name, meal_options in menu_items.items():
+                    if meal_options:
+                        print({meal_type_name: meal_options})
+                        menus[meal_type_name] = meal_options
 
     save_menus_to_file(menus, today_juvenes + ".json")
 

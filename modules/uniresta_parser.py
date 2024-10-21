@@ -7,6 +7,8 @@ extracting them and parsing the results for usage by the menus.py module
 def extract_uniresta_menu_items(uniresta_data):
     """Function to extract Uniresta menu items in Finnish along with the restaurant name"""
     menu_structure = {}
+    # This is so that we dont truncate two different LOUNAS into one
+    meal_name_count = {}
 
     for item in uniresta_data:
         data = item.get("data", {})
@@ -16,8 +18,18 @@ def extract_uniresta_menu_items(uniresta_data):
                 option_names = meal_option.get("names", [])
                 for name in option_names:
                     if name.get("language") == "fi":
-                        meal_option_name = name["name"]
-                        menu_structure[meal_option_name] = []
+                        meal_name = name["name"]
+
+                        # Check if meal option name already exists and append count if needed
+                        if meal_name in meal_name_count:
+                            meal_name_count[meal_name] += 1
+                            new_meal_name = f"{meal_name} {meal_name_count[meal_name]}"
+                        else:
+                            meal_name_count[meal_name] = 1
+                            new_meal_name = meal_name
+
+                        # Initialize the menu structure for the meal option
+                        menu_structure[new_meal_name] = []
 
                         rows = meal_option.get("rows", [])
                         for row in rows:
@@ -25,8 +37,6 @@ def extract_uniresta_menu_items(uniresta_data):
                             for name in names:
                                 if name.get("language") == "fi":
                                     food_item_name = name.get("name", "Unknown Item")
-                                    menu_structure[meal_option_name].append(
-                                        food_item_name
-                                    )
+                                    menu_structure[new_meal_name].append(food_item_name)
 
     return menu_structure
