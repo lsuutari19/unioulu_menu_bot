@@ -6,14 +6,15 @@ and saves it into a .json format for use by the Discord bot.
 import json
 import os
 from datetime import datetime
-from modules.variables import (
+from api_parsers.variables import (
     JUVENES_RESTAURANTS,
     JUVENES_URL,
     UNIRESTA_URL,
     fetch_api_data,
 )
-from modules.juvenes_parser import extract_juvenes_menu_items
-from modules.uniresta_parser import extract_uniresta_menu_items
+from api_parsers.emoji import random_emoji
+from api_parsers.juvenes_parser import extract_juvenes_menu_items
+from api_parsers.uniresta_parser import extract_uniresta_menu_items
 
 
 def save_menus_to_file(menus_dict, filename):
@@ -25,7 +26,30 @@ def save_menus_to_file(menus_dict, filename):
         json.dump(menus_dict, file, ensure_ascii=False, indent=4)
 
 
-def get_menus():
+async def parse_menu_from_file(menu_data):
+    """
+    This function parses the data that the discord bot will then send as a message.
+    """
+    markdown_message = ""
+
+    for restaurant, meals in menu_data.items():
+        markdown_message += f"# {random_emoji()}    {restaurant}\n\n"
+        if meals:
+            for meal_type, items in meals.items():
+                markdown_message += f"### {meal_type}\n"
+                for i, item in enumerate(items):
+                    if i == len(items) - 1:
+                        markdown_message += f"- {item}"
+                    else:
+                        markdown_message += f"- {item}\n"
+                markdown_message += "\n"
+        else:
+            markdown_message += "No menu available.\n\n"
+    markdown_message += "\n"
+    return markdown_message
+
+
+async def get_menus():
     """
     Function to get all menus for today
     """
@@ -44,7 +68,9 @@ def get_menus():
         if uniresta_data_response:
             menu_items = extract_uniresta_menu_items(uniresta_data_response)
             # Check that there are no empty values in the menu
-            filtered_menu_items = {meal: items for meal, items in menu_items.items() if items}
+            filtered_menu_items = {
+                meal: items for meal, items in menu_items.items() if items
+            }
 
             if filtered_menu_items:
                 print(filtered_menu_items)
