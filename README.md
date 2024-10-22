@@ -1,4 +1,4 @@
-Simple Discord bot that fetches the University of Oulu menus from different APIs, depending if the restaurant belongs to Uniresta or Juvenes (Sodexo aswell soon).
+### Simple Discord bot that fetches the University of Oulu menus from different APIs, depending if the restaurant belongs to Uniresta or Juvenes (Sodexo aswell soon).
 
 The two API's it calls are JAMIX and Poweresta, the data is fetched via the following API calls:
 
@@ -11,12 +11,13 @@ If !menu is executed on any discord channel where the bot exists it will first c
 it will fetch them and display each restaurants menu in different message, this is to avoid the discord message limit. Furthermore, the bot
 adds reactions under the menu's so that users can indicate which meals they would prefer!
 
-Example output from running !menu
+#### Example output from running !menu
+
 ![image](https://github.com/user-attachments/assets/87f5655b-182c-493f-be3a-9668f9cd4f37)
 
 
 
-To set it up on your own:
+#### To set it up on your own:
 1. Have Python installed
 2. Clone this repository & open the repository directory in terminal
 3. Execute following command: pip install -r requirements.txt
