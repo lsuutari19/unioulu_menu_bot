@@ -7,6 +7,7 @@ import os
 from dotenv import load_dotenv, find_dotenv
 import discord
 from menus import get_menus, parse_menu_from_file
+from api_parsers.emoji import random_emoji
 
 
 dotenv_file = find_dotenv(usecwd=True)
@@ -30,10 +31,8 @@ async def check_todays_menu_exists(today_date):
     """Checks if today's menu is already fetched into menus folder and returns the parsed JSON"""
 
     file_path = f"menus/{today_date}.json"
-    print(file_path)
 
     if os.path.isfile(file_path):
-        print("Menu exists!")
         with open(file_path, "r", encoding="utf-8") as file:
             try:
                 menu_data = json.load(file)
@@ -75,8 +74,17 @@ async def on_message(message):
                 await message.channel.send("Menu could not be fetched or created.")
                 return
 
-        markdown_message = await parse_menu_from_file(menu_data, today_date)
-        await message.channel.send(markdown_message)
+        if isinstance(menu_data, str):
+            menu_data = json.loads(menu_data)
+
+        reactions = ["👍", "👎", "❤️"]
+
+        # Loop through each restaurant and its menu, and send each one separately
+        for restaurant, meals in menu_data.items():
+            markdown_message = await parse_menu_from_file(restaurant, meals)
+            sent_message = await message.channel.send(markdown_message)
+            for reaction in reactions:
+                await sent_message.add_reaction(reaction)
 
 
 client.run(TOKEN, log_handler=handler, log_level=logging.DEBUG)

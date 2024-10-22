@@ -26,26 +26,23 @@ def save_menus_to_file(menus_dict, filename):
         json.dump(menus_dict, file, ensure_ascii=False, indent=4)
 
 
-async def parse_menu_from_file(menu_data, date):
+async def parse_menu_from_file(restaurant, meals):
     """
-    This function parses the data that the discord bot will then send as a message.
+    This function formats the menu for a specific restaurant.
     """
-    markdown_message = f"# {random_emoji()} Here's the menus for {date} {random_emoji()}"
+    markdown_message = f"## {random_emoji()}    {restaurant}\n\n"
 
-    for restaurant, meals in menu_data.items():
-        markdown_message += f"## {random_emoji()}    {restaurant}\n\n"
-        if meals:
-            for meal_type, items in meals.items():
-                markdown_message += f"### {meal_type}\n"
-                for i, item in enumerate(items):
-                    if i == len(items) - 1:
-                        markdown_message += f"- {item}"
-                    else:
-                        markdown_message += f"- {item}\n"
-                markdown_message += "\n"
-        else:
-            markdown_message += "No menu available.\n\n"
-    markdown_message += "\n"
+    if isinstance(meals, dict):
+        for meal_type, items in meals.items():
+            markdown_message += f"### {meal_type}\n"
+            for item in items:
+                markdown_message += f"- {item}\n"
+        markdown_message += "\n"
+    elif isinstance(meals, str):
+        markdown_message += f"{meals}\n\n"
+    else:
+        markdown_message += "No menu available.\n\n"
+
     return markdown_message
 
 
@@ -99,6 +96,3 @@ async def get_menus():
                         menus[meal_type_name] = meal_options
 
     save_menus_to_file(menus, today_juvenes + ".json")
-
-
-get_menus()

@@ -7,7 +7,6 @@ extracting them and parsing the results for usage by the menus.py module
 def extract_uniresta_menu_items(uniresta_data):
     """Function to extract Uniresta menu items in Finnish along with the restaurant name"""
     menu_structure = {}
-    # This is so that we dont truncate two different LOUNAS into one
     meal_name_count = {}
 
     for item in uniresta_data:
@@ -19,7 +18,9 @@ def extract_uniresta_menu_items(uniresta_data):
                 for name in option_names:
                     if name.get("language") == "fi":
                         meal_name = name["name"].upper()
-
+                        print("This is meal_name", meal_name)
+                        if "SULJETTU" in meal_name:
+                            continue
                         # Check if meal option name already exists and append count if needed
                         # so "lounas", "lounas 2" ...
                         if meal_name in meal_name_count:
