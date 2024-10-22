@@ -1,247 +1,98 @@
-""" This module handles all the different menu fetches, formatting and so on """
+"""
+This module ingests the data returned from uniresta_parser and juvenes_parser
+and saves it into a .json format for use by the Discord bot. 
+"""
+
 import json
-import random
+import os
 from datetime import datetime
-import requests
-
-# Templated endpoints for API calls
-UNIRESTA_URL = ("https://api.fi.poweresta.com/publicmenu/dates"
-                "/uniresta/{name}/?menu=ravintola{name}&dates={date}")
-
-JUVENES_URL = ("http://fi.jamix.cloud/apps/menuservice/"
-               "rest/haku/menu/{customerID}/{kitchenID}?lang=fi")
-
-
-def random_emoji():
-    """ Function for getting a random emoji """
-    emojis = [
-        "😀",
-        "😂",
-        "😅",
-        "😇",
-        "😉",
-        "😊",
-        "😍",
-        "😎",
-        "😜",
-        "🤔",
-        "😐",
-        "😑",
-        "😩",
-        "😢",
-        "😤",
-        "😮",
-        "😱",
-        "😳",
-        "😵",
-        "😡",
-        "😷",
-        "🤒",
-        "🤕",
-        "🤠",
-        "🤖",
-        "💻",
-        "🎉",
-        "🎈",
-        "✨",
-        "❤️",
-        "🌟",
-        "🌈",
-        "🐶",
-        "🐱",
-        "🦁",
-        "🐯",
-        "🐻",
-        "🐼",
-        "🦄",
-        "🐔",
-        "🐢",
-        "🦊",
-        "🌻",
-        "🌺",
-        "🌸",
-        "🌼",
-        "🍀",
-        "🍉",
-        "🍕",
-        "🍔",
-        "🌭",
-        "🍟",
-        "🍦",
-        "🍰",
-        "🎂",
-        "🍩",
-        "🥨",
-        "🍿",
-        "🌮",
-        "🥗",
-        "🌽",
-        "🍇",
-        "🍊",
-        "🍏",
-        "🍌",
-        "🥥",
-        "🎈",
-        "🎉",
-        "🎊",
-        "🎵",
-        "🎶",
-        "🔔",
-        "📚",
-        "🎮",
-        "💼",
-        "📸",
-        "✈️",
-        "⛷️",
-        "🏖️",
-    ]
-    return random.choice(emojis)
+from api_parsers.variables import (
+    JUVENES_RESTAURANTS,
+    JUVENES_URL,
+    UNIRESTA_URL,
+    fetch_api_data,
+)
+from api_parsers.emoji import random_emoji
+from api_parsers.juvenes_parser import extract_juvenes_menu_items
+from api_parsers.uniresta_parser import extract_uniresta_menu_items
 
 
-
-def fetch_juvenes_data(customer_id, kitchen_id):
+def save_menus_to_file(menus_dict, filename):
     """
-        Function to fetch Juvenes data 
+    Save the collected menus to a JSON file.
     """
-    url = JUVENES_URL.format(customerID=customer_id, kitchenID=kitchen_id)
-    try:
-        response = requests.get(url, timeout=20)
-        response.raise_for_status()
-        data = response.json()
-        return data
-    except requests.exceptions.RequestException as error:
-        print(f"Error fetching Juvenes data: {error}")
-        return None
+    file_path = os.path.join("menus", filename)
+    with open(file_path, "w", encoding="utf-8") as file:
+        json.dump(menus_dict, file, ensure_ascii=False, indent=4)
 
 
+async def parse_menu_from_file(restaurant, meals):
+    """
+    This function formats the menu for a specific restaurant.
+    """
+    markdown_message = f"## {random_emoji()}    {restaurant}\n\n"
 
-def load_juvenes_restaurants(file_path):
-    """Function to load Uniresta restaurant data from the JSON file"""
-    with open(file_path, "r", encoding="utf-8") as file:
-        return json.load(file)
+    if isinstance(meals, dict):
+        for meal_type, items in meals.items():
+            markdown_message += f"### {meal_type}\n"
+            for item in items:
+                markdown_message += f"- {item}\n"
+        markdown_message += "\n"
+    elif isinstance(meals, str):
+        markdown_message += f"{meals}\n\n"
+    else:
+        markdown_message += "No menu available.\n\n"
 
-
-def extract_juvenes_menu_items(juvenes_data, today_date):
-    """Function to extract kitchenName, specific meal option names, and menu items"""
-    ignored_items = {
-        "CLASSIC",
-        "JÄLKIRUOKA",
-        "KASVISLOUNAS",
-        "SALAD AND SOUP",
-        "MY POPUP GRILL KASVIS",
-        "MY POPUP GRILL",
-    }
-
-    messages = []
-    for kitchen in juvenes_data:
-        kitchen_name = kitchen.get("kitchenName", "Unknown Kitchen")
-        messages.append(f"\n### {kitchen_name} {random_emoji()}\n```\n")
-
-        for menu_type in kitchen.get("menuTypes", []):
-            for menu in menu_type.get("menus", []):
-                for day in menu.get("days", []):
-                    if str(day.get("date")) == today_date:
-                        for meal_option in day.get("mealoptions", []):
-                            meal_option_name = meal_option.get(
-                                "name", "Unknown Meal Option"
-                            )
-
-                            # Check if the meal option is not in the ignored items
-                            if meal_option_name not in ignored_items:
-                                messages.append(f"    {meal_option_name}\n")
-                                for menu_item in meal_option.get("menuItems", []):
-                                    item_name = menu_item.get("name", "Unknown Item")
-                                    messages.append(f"        {item_name}\n")
-    messages.append("```")
-    return "".join(messages)
+    return markdown_message
 
 
-
-def fetch_uniresta_data(restaurant_name, today_date):
-    """ Function to fetch Uniresta data """
-    url = UNIRESTA_URL.format(name=restaurant_name, date=today_date)
-    try:
-        response = requests.get(url, timeout=20)
-        response.raise_for_status()
-        data = response.json()
-        return data
-    except requests.exceptions.RequestException as error:
-        print(f"Error fetching Uniresta data: {error}")
-        return None
-
-
-def extract_uniresta_menu_items(uniresta_data_list, restaurant_name):
-    """ Function to extract Uniresta menu items in Finnish along with the restaurant name """
-    ignored_items = {
-        "Tumma riisi",
-        "Peruna",
-        "Kasvissekoitus",
-        "Päivän jälkiruoka",
-        "Lämmin lisäke",
-        "Päivän jälkiruoka 1,40€",
-        "Kahvila Lipaston salaattitori",
-        "Kasvislounas",
-        "Lipaston Grilli",
-    }
-
-    messages = [f"\n### Restaurant {restaurant_name} {random_emoji()}\n```\n"]
-
-    for uniresta_data in uniresta_data_list:
-        if uniresta_data.get("allSuccessful"):
-            meal_options = uniresta_data.get("data", {}).get("mealOptions", [])
-            for meal_option in meal_options:
-                # Extract the meal option name
-                option_names = meal_option.get("names", [])
-                meal_name = "Unknown Meal Option"
-                for name in option_names:
-                    if name.get("language") == "fi":
-                        meal_name = name.get("name", "Unknown Meal Option")
-                        break
-
-                if meal_name not in ignored_items:
-                    messages.append(f"    {meal_name}\n")
-                    rows = meal_option.get("rows", [])
-                    for row in rows:
-                        names = row.get("names", [])
-                        for name in names:
-                            if name.get("language") == "fi":
-                                food_item_name = name.get("name", "Unknown Item")
-                                messages.append(f"        {food_item_name}\n")
-    messages.append("```")
-    return "".join(messages)
-
-
-
-def get_menus():
-    """ Function to get all menus for today """
+async def get_menus():
+    """
+    Function to get all menus for today
+    """
     today = datetime.now()
     today_uniresta = today.strftime("%Y-%m-%d")
     today_juvenes = today.strftime("%Y%m%d")
 
     uniresta_data = ["julinia", "lipasto"]
-    response_messages = [
-        f"{random_emoji()} Here are the menus for {today_uniresta} {random_emoji()}\n"
-    ]
+    menus = {}
 
     for uniresta_restaurant in uniresta_data:
-        uniresta_data_response = fetch_uniresta_data(
-            uniresta_restaurant, today_uniresta
+        uniresta_data_response = fetch_api_data(
+            UNIRESTA_URL, name=uniresta_restaurant, date=today_uniresta
         )
-        if uniresta_data_response:
-            response_messages.append(
-                extract_uniresta_menu_items(uniresta_data_response, uniresta_restaurant)
-            )
 
-    juvenes_data = load_juvenes_restaurants("juvenes_restaurants.json")
-    for restaurant in juvenes_data["restaurants"]:
+        if uniresta_data_response:
+            menu_items = extract_uniresta_menu_items(uniresta_data_response)
+            # Check that there are no empty values in the menu
+            filtered_menu_items = {
+                meal: items for meal, items in menu_items.items() if items
+            }
+
+            if filtered_menu_items:
+                print(filtered_menu_items)
+                menus[uniresta_restaurant.capitalize()] = filtered_menu_items
+            else:
+                print(f"{uniresta_restaurant.capitalize()} has no valid menu items.")
+
+    for restaurant in JUVENES_RESTAURANTS:
         customer_id = restaurant["customerID"]
         kitchen_id = restaurant["kitchenID"]
-        juvenes_data_response = fetch_juvenes_data(customer_id, kitchen_id)
+
+        juvenes_data_response = fetch_api_data(
+            JUVENES_URL, customerID=customer_id, kitchenID=kitchen_id
+        )
+
         if juvenes_data_response:
-            response_messages.append(
-                extract_juvenes_menu_items(juvenes_data_response, today_juvenes)
+            menu_items = extract_juvenes_menu_items(
+                juvenes_data_response, today_juvenes
             )
 
-    if response_messages:
-        return "".join(response_messages)
-    return "Rankaise tämän spagetin luojaa!"
+            if menu_items:
+                # Only add to 'menus' if at least one of the meal types has items
+                for meal_type_name, meal_options in menu_items.items():
+                    if meal_options:
+                        print({meal_type_name: meal_options})
+                        menus[meal_type_name] = meal_options
+
+    save_menus_to_file(menus, today_juvenes + ".json")
