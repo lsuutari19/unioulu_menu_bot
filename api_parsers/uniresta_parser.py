@@ -18,7 +18,6 @@ def extract_uniresta_menu_items(uniresta_data):
                 for name in option_names:
                     if name.get("language") == "fi":
                         meal_name = name["name"].upper()
-                        print("This is meal_name", meal_name)
                         if "SULJETTU" in meal_name:
                             continue
                         # Check if meal option name already exists and append count if needed

@@ -6,8 +6,8 @@ import json
 import os
 from dotenv import load_dotenv, find_dotenv
 import discord
+import pytz
 from menus import get_menus, parse_menu_from_file
-from api_parsers.emoji import random_emoji
 
 
 dotenv_file = find_dotenv(usecwd=True)
@@ -61,8 +61,14 @@ async def on_message(message):
         await message.channel.send("Hello!")
 
     if message.content.startswith("!menu"):
-        # Check if today's menu file exists and get the parsed data
+        current_time = datetime.datetime.now(pytz.timezone("Europe/Helsinki"))
         today_date = datetime.datetime.now().strftime("%Y%m%d")
+
+        # Check if the time is past 5pm if it is look for the next day's menu
+        if current_time.hour >= 17:
+            today_date = (current_time + datetime.timedelta(days=1)).strftime("%Y%m%d")
+            print("wow")
+        # Check if today's menu file exists and get the parsed data
         menu_data = await check_todays_menu_exists(today_date)
 
         if not menu_data:
