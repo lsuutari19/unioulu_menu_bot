@@ -27,10 +27,10 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 
-async def check_todays_menu_exists(today_date):
+async def check_todays_menu_exists(today):
     """Checks if today's menu is already fetched into menus folder and returns the parsed JSON"""
 
-    file_path = f"menus/{today_date}.json"
+    file_path = f"menus/{today}.json"
 
     if os.path.isfile(file_path):
         with open(file_path, "r", encoding="utf-8") as file:
@@ -62,18 +62,18 @@ async def on_message(message):
 
     if message.content.startswith("!menu"):
         current_time = datetime.datetime.now(pytz.timezone("Europe/Helsinki"))
-        today_date = datetime.datetime.now().strftime("%Y%m%d")
+        today = datetime.datetime.now().strftime("%Y%m%d")
 
-        # Check if the time is past 5pm if it is look for the next day's menu
-        if current_time.hour >= 17:
-            today_date = (current_time + datetime.timedelta(days=1)).strftime("%Y%m%d")
-            print("wow")
+        # Check if the time is past 5pm or Sunday, if it is look for the next day's menu
+        if current_time.hour >= 17 or current_time.weekday() == 6:
+            today = (current_time + datetime.timedelta(days=1)).strftime("%Y%m%d")
+
         # Check if today's menu file exists and get the parsed data
-        menu_data = await check_todays_menu_exists(today_date)
+        menu_data = await check_todays_menu_exists(today)
 
         if not menu_data:
-            await get_menus()
-            menu_data = await check_todays_menu_exists(today_date)
+            await get_menus(today)
+            menu_data = await check_todays_menu_exists(today)
 
             # Last check to make sure there wasn't issues in creating the json file
             if not menu_data:
@@ -82,6 +82,10 @@ async def on_message(message):
 
         if isinstance(menu_data, str):
             menu_data = json.loads(menu_data)
+
+        await message.channel.send(
+            f"## Here are the restaurant menus for {today[:4]}-{today[4:6]}-{today[6:]}"
+        )
 
         reactions = ["👍", "👎", "❤️"]
 

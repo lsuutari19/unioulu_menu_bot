@@ -6,10 +6,12 @@ https://api.fi.poweresta.com/publicmenu/dates/uniresta/{name}/?menu=ravintola{na
 
 http://fi.jamix.cloud/apps/menuservice/rest/haku/menu/{customerID}/{kitchenID}?lang=fi
 
-After fetching the data from the APIs it will then create a .json file in format <date>.json in the ./menus directory under repository root.
+After fetching the data from the APIs it will then create a .json file in format {date}.json in the ./menus directory under repository root.
 If !menu is executed on any discord channel where the bot exists it will first check if today's menus have already been fetched, if not
 it will fetch them and display each restaurants menu in different message, this is to avoid the discord message limit. Furthermore, the bot
 adds reactions under the menu's so that users can indicate which meals they would prefer!
+
+Furthermore if the current time is past 5pm (or 17:00 in Finnish time), it will get the next day's menu.
 
 #### Example output from running !menu
 

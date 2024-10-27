@@ -46,13 +46,19 @@ async def parse_menu_from_file(restaurant, meals):
     return markdown_message
 
 
-async def get_menus():
+async def get_menus(date=False):
     """
     Function to get all menus for today
     """
-    today = datetime.now()
-    today_uniresta = today.strftime("%Y-%m-%d")
-    today_juvenes = today.strftime("%Y%m%d")
+
+    # If we want a specific date vs if we want today
+    if date:
+        today_uniresta = f"{date[:4]}-{date[4:6]}-{date[6:]}"
+        today_juvenes = date
+    else:
+        today = datetime.now()
+        today_uniresta = today.strftime("%Y-%m-%d")
+        today_juvenes = today.strftime("%Y%m%d")
 
     uniresta_data = ["julinia", "lipasto"]
     menus = {}
